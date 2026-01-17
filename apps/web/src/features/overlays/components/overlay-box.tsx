@@ -10,7 +10,7 @@ interface OverlayBoxProps {
   onUpdate: (id: string, updates: Partial<Overlay>) => void;
 }
 
-
+// Debounce delay in milliseconds
 const DEBOUNCE_DELAY = 500;
 
 export function OverlayBox({
@@ -33,7 +33,7 @@ export function OverlayBox({
     setImageError(false);
   }, [overlay.content]);
 
-
+  
   useEffect(() => {
     return () => {
       if (updateTimeoutRef.current) {
