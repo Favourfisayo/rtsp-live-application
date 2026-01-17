@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "my_app_lints_ruff"
+version = "0.1.0"
+description = "Shared Ruff linting configuration and tooling for Python projects"
+dependencies = [
+    "ruff>=0.1.0",
+]
+
+[tool.setuptools]
+py-modules = []

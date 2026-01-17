@@ -1,5 +1,7 @@
 # my-better-t-app
 
+* FFMPEG Command for ref: `ffmpeg -re -stream_loop -1 -i "C:\Users\HP\Videos\Aeon Flux 2005 REMASTERED 1080p BluRay HEVC x265 5.1 BONE.mkv"  -c copy -f rtsp rtsp://localhost:8554/test`
+
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, React Router, and more.
 
 ## Features

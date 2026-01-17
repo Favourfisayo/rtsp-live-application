@@ -1,0 +1,9 @@
+[project]
+name = "server"
+version = "0.1.0"
+description = "Flask Backend"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.ruff]
+extend = "../../packages/lints/ruff/ruff.toml"

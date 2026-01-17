@@ -1,5 +1,8 @@
 {
   "name": "@my-better-t-app/config",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^20.19.30"
+  }
 }

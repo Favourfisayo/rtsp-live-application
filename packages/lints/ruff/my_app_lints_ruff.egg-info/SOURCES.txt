@@ -1,0 +1,6 @@
+pyproject.toml
+my_app_lints_ruff.egg-info/PKG-INFO
+my_app_lints_ruff.egg-info/SOURCES.txt
+my_app_lints_ruff.egg-info/dependency_links.txt
+my_app_lints_ruff.egg-info/requires.txt
+my_app_lints_ruff.egg-info/top_level.txt

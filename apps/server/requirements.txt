@@ -1,0 +1,16 @@
+# Core dependencies
+flask>=2.3.0,<3.0.0
+python-dotenv
+flask-limiter
+bleach>=6.0.0
+
+# Local packages
+-e ../../packages/db
+-e ../../packages/config
+-e ../../packages/lints/ruff
+
+# Testing dependencies
+pytest>=7.0.0
+pytest-flask>=1.2.0
+mongomock>=4.0.0
+coverage>=7.0.0
