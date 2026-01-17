@@ -50,3 +50,8 @@ tmp
 temp
 
 __pycache__
+.venv
+
+# HLS streaming files
+*.m3u8
+segment_*.ts

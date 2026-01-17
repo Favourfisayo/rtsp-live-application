@@ -6,6 +6,9 @@
     "dev": "uv run flask --app src/app run --debug --port 5000",
     "lint": "uv run ruff check .",
     "lint:fix": "uv run ruff check . --fix",
+    "test": "pytest",
+    "test:coverage:run": "coverage run -m pytest",
+    "test:coverage:report": "coverage report -m",
     "format": "uv run ruff format .",
     "format:check": "uv run ruff format . --check",
     "install-deps": "uv pip install -r requirements.txt"

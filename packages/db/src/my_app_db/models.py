@@ -4,6 +4,7 @@ from datetime import datetime
 class Overlay(Document):
     type = StringField(required=True, choices=('text', 'image'))
     content = StringField(required=True)
+    imageUrl = StringField(required=False)
     x = FloatField(required=True, default=0.0)
     y = FloatField(required=True, default=0.0)
     width = FloatField(required=True, default=100.0)

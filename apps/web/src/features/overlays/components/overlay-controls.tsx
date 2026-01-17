@@ -35,14 +35,16 @@ export function OverlayControls({
   const [newType, setNewType] = useState<OverlayType>('text');
   const [newContent, setNewContent] = useState('');
   const [editContent, setEditContent] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
 
   const selectedOverlay = overlays.find((o) => o._id === selectedId);
 
   useEffect(() => {
     if (selectedOverlay) {
       setEditContent(selectedOverlay.content);
+      setEditImageUrl(selectedOverlay.imageUrl || '');
     }
-  }, [selectedOverlay?._id, selectedOverlay?.content]);
+  }, [selectedOverlay?._id, selectedOverlay?.content, selectedOverlay?.imageUrl]);
 
   const handleCreate = () => {
     if (!newContent) return;
@@ -56,8 +58,16 @@ export function OverlayControls({
   };
 
   const handleSaveEdit = () => {
-    if (selectedOverlay && editContent !== selectedOverlay.content) {
-      onUpdate(selectedOverlay._id, { content: editContent });
+    if (!selectedOverlay) return;
+    
+    if (selectedOverlay.type === 'image') {
+      if (editImageUrl !== selectedOverlay.imageUrl) {
+        onUpdate(selectedOverlay._id, { imageUrl: editImageUrl });
+      }
+    } else {
+      if (editContent !== selectedOverlay.content) {
+        onUpdate(selectedOverlay._id, { content: editContent });
+      }
     }
   };
 
@@ -145,7 +155,9 @@ export function OverlayControls({
               ) : (
                 <ImageIcon className="h-4 w-4 text-muted-foreground" />
               )}
-              <span className="truncate font-medium">{overlay.content}</span>
+              <span className="truncate font-medium">
+                {overlay.type === 'image' ? overlay.imageUrl : overlay.content}
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -171,22 +183,47 @@ export function OverlayControls({
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="content">Content</Label>
-              <Input
-                id="content"
-                value={editContent}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setEditContent(e.target.value)}
-              />
+              <Label htmlFor="content">
+                {selectedOverlay?.type === 'image' ? 'Image URL' : 'Content'}
+              </Label>
+              {selectedOverlay?.type === 'image' ? (
+                <Input
+                  id="content"
+                  value={editImageUrl}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEditImageUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              ) : (
+                <Input
+                  id="content"
+                  value={editContent}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEditContent(e.target.value)}
+                />
+              )}
             </div>
 
             <Button
               onClick={handleSaveEdit}
-              disabled={editContent === selectedOverlay?.content}
+              disabled={
+                selectedOverlay?.type === 'image'
+                  ? editImageUrl === selectedOverlay?.imageUrl
+                  : editContent === selectedOverlay?.content
+              }
               className="w-full"
               size="sm"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Changes
+            </Button>
+
+            <Button
+              variant="destructive"
+              onClick={() => selectedOverlay && onDelete(selectedOverlay._id)}
+              className="w-full"
+              size="sm"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Overlay
             </Button>
 
             <Activity mode={selectedOverlay?.type === 'text' ? 'visible' : 'hidden'}>

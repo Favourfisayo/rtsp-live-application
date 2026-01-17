@@ -6,19 +6,18 @@ import bleach
 
 
 class OverlayValidator:
-    """
-    Validates overlay data to prevent XSS, injection attacks, and data integrity issues.
-    """
+    """Validates overlay data to prevent XSS, injection attacks, and data integrity issues."""
     
     VALID_TYPES = {'text', 'image'}
     MAX_CONTENT_LENGTH = 1000
+    MAX_IMAGE_URL_LENGTH = 2048
     MAX_COORDINATE = 10000
     MIN_COORDINATE = -1000
     MAX_DIMENSION = 5000
     MIN_DIMENSION = 0
     
     ALLOWED_HTML_TAGS = ['b', 'i', 'u', 'span']
-    ALLOWED_HTML_ATTRIBUTES = {}  # No attributes allowed for security
+    ALLOWED_HTML_ATTRIBUTES = {}
     
     def __init__(self):
         self.errors: List[str] = []
@@ -41,12 +40,16 @@ class OverlayValidator:
         elif overlay_type not in self.VALID_TYPES:
             self.errors.append(f"Type must be one of: {', '.join(self.VALID_TYPES)}")
         
-
         content = data.get('content')
         if not content:
             self.errors.append("Content is required")
         elif not isinstance(content, str):
             self.errors.append("Content must be a string")
+        elif overlay_type == 'image':
+            if len(content) > self.MAX_IMAGE_URL_LENGTH:
+                self.errors.append(f"Image URL must not exceed {self.MAX_IMAGE_URL_LENGTH} characters")
+            if not content.startswith(('http://', 'https://')):
+                self.errors.append("Image URL must start with http:// or https://")
         elif len(content) > self.MAX_CONTENT_LENGTH:
             self.errors.append(f"Content must not exceed {self.MAX_CONTENT_LENGTH} characters")
         
@@ -90,23 +93,14 @@ class OverlayValidator:
             self.errors.append(f"{field_name} must be between {min_val} and {max_val}")
     
     def sanitize_content(self, content: str, overlay_type: str) -> str:
-        """
-        Sanitize content to prevent XSS attacks.
-        For text overlays, allows limited HTML tags.
-        For image overlays, validates URL format.
-        """
+        """Sanitize content based on overlay type."""
         if overlay_type == 'text':
-
             return bleach.clean(
                 content,
                 tags=self.ALLOWED_HTML_TAGS,
                 attributes=self.ALLOWED_HTML_ATTRIBUTES,
                 strip=True
             )
-        elif overlay_type == 'image':
-
-            return bleach.clean(content, tags=[], strip=True)
-        
         return content
     
     def get_error_message(self) -> str:
@@ -133,31 +127,27 @@ def validate_overlay_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
 
 
 def validate_overlay_update_data(data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-    """
-    Validate partial overlay data for UPDATE operations.
-    Only validates fields that are present, does not require all fields.
-    Returns (is_valid, error_message).
-    """
+    """Validate partial overlay data for UPDATE operations."""
     validator = OverlayValidator()
     validator.errors = []
     
     if not isinstance(data, dict):
         return False, "Data must be a dictionary"
     
-    # Type validation (if present)
     if 'type' in data:
         overlay_type = data['type']
         if overlay_type not in validator.VALID_TYPES:
             validator.errors.append(f"Type must be one of: {', '.join(validator.VALID_TYPES)}")
     
-    if 'content' in data:
-        content = data['content']
-        if not isinstance(content, str):
-            validator.errors.append("Content must be a string")
-        elif len(content) > validator.MAX_CONTENT_LENGTH:
-            validator.errors.append(f"Content must not exceed {validator.MAX_CONTENT_LENGTH} characters")
+    if 'imageUrl' in data:
+        image_url = data['imageUrl']
+        if not isinstance(image_url, str):
+            validator.errors.append("imageUrl must be a string")
+        elif len(image_url) > validator.MAX_IMAGE_URL_LENGTH:
+            validator.errors.append(f"imageUrl must not exceed {validator.MAX_IMAGE_URL_LENGTH} characters")
+        elif not image_url.startswith(('http://', 'https://')):
+            validator.errors.append("imageUrl must start with http:// or https://")
     
-
     if 'x' in data:
         validator._validate_number('x', data['x'], validator.MIN_COORDINATE, validator.MAX_COORDINATE, allow_none=False)
     if 'y' in data:
@@ -167,21 +157,19 @@ def validate_overlay_update_data(data: Dict[str, Any]) -> tuple[bool, Optional[s
     if 'height' in data:
         validator._validate_number('height', data['height'], validator.MIN_DIMENSION, validator.MAX_DIMENSION, allow_none=False)
     
-
     if 'visible' in data:
         visible = data['visible']
         if not isinstance(visible, bool):
             validator.errors.append("Visible must be a boolean")
     
-
     if 'z_index' in data:
         validator._validate_number('z_index', data['z_index'], -100, 100, allow_none=False)
     
     if validator.errors:
         return False, validator.get_error_message()
     
-    # Sanitize content if both type and content are present
     if 'content' in data and 'type' in data:
         data['content'] = validator.sanitize_content(data['content'], data['type'])
     
+    return True, None
     return True, None

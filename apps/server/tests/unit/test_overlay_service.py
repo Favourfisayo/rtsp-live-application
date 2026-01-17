@@ -11,7 +11,7 @@ Tests cover:
 - ContentSanitizer
 """
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from src.modules.overlays.overlay_service import (
     ContentSanitizer,
@@ -158,16 +158,18 @@ class TestOverlayData:
         assert '<script>' not in result.content
     
     def test_from_dict_does_not_sanitize_image_content(self):
-        """Test from_dict does not sanitize image overlay URLs."""
+        """Test from_dict downloads image and stores URL in image_url field."""
         data = {
             'type': 'image',
             'content': 'https://example.com/logo.png?param=value'
         }
         
-        result = OverlayData.from_dict(data, sanitize=True)
+        with patch('src.modules.overlays.overlay_service.ImageDownloader.download_and_encode') as mock_download:
+            mock_download.return_value = 'data:image/png;base64,abc123'
+            result = OverlayData.from_dict(data, sanitize=True)
         
-        # Image URLs should be preserved
-        assert result.content == 'https://example.com/logo.png?param=value'
+        assert result.content == 'data:image/png;base64,abc123'
+        assert result.image_url == 'https://example.com/logo.png?param=value'
     
     def test_from_dict_sanitize_disabled(self):
         """Test from_dict with sanitization disabled."""
@@ -211,7 +213,7 @@ class TestOverlayResponseFormatter:
     
     def test_allowed_update_fields(self):
         """Test ALLOWED_UPDATE_FIELDS contains expected fields."""
-        expected = {'type', 'content', 'x', 'y', 'width', 'height', 'zIndex', 'visible'}
+        expected = {'type', 'content', 'imageUrl', 'x', 'y', 'width', 'height', 'zIndex', 'visible'}
         assert expected == OverlayResponseFormatter.ALLOWED_UPDATE_FIELDS
 
 
@@ -234,10 +236,13 @@ class TestOverlayServiceCreate:
     
     def test_create_image_overlay(self, overlay_service, sample_image_overlay_data):
         """Test creating an image overlay."""
-        result = overlay_service.create_overlay(sample_image_overlay_data)
+        with patch('src.modules.overlays.overlay_service.ImageDownloader.download_and_encode') as mock_download:
+            mock_download.return_value = 'data:image/png;base64,abc123'
+            result = overlay_service.create_overlay(sample_image_overlay_data)
         
         assert result['type'] == 'image'
-        assert result['content'] == 'https://example.com/logo.png'
+        assert result['content'] == 'data:image/png;base64,abc123'
+        assert result['imageUrl'] == 'https://example.com/logo.png'
     
     def test_create_overlay_returns_id(self, overlay_service, sample_text_overlay_data):
         """Test that created overlay has an ID."""

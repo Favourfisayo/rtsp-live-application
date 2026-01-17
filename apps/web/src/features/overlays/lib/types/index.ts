@@ -4,6 +4,7 @@ export interface Overlay {
   _id: string;
   type: OverlayType;
   content: string;
+  imageUrl?: string;
   x: number;
   y: number;
   width: number;
@@ -17,6 +18,7 @@ export interface Overlay {
 export interface CreateOverlayDto {
   type: OverlayType;
   content: string;
+  imageUrl?: string;
   x: number;
   y: number;
   width: number;
@@ -26,6 +28,7 @@ export interface CreateOverlayDto {
 export interface UpdateOverlayDto {
   type?: OverlayType;
   content?: string;
+  imageUrl?: string;
   x?: number;
   y?: number;
   width?: number;

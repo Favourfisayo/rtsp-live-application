@@ -9,7 +9,7 @@ from src.validators.overlay_validators import (
     validate_overlay_update_data,
 )
 
-from .overlay_service import OverlayService
+from .overlay_service import ImageDownloadError, OverlayService
 
 overlay_bp = Blueprint('overlays', __name__, url_prefix='/api/overlays')
 _service = OverlayService()
@@ -27,7 +27,6 @@ def create_overlay():
     if data is None:
         return jsonify(error_response("No data provided", 400)[0]), 400
     
-
     is_valid, error_message = validate_overlay_data(data)
     if not is_valid:
         return jsonify(error_response(f"Validation error: {error_message}", 400)[0]), 400
@@ -35,6 +34,8 @@ def create_overlay():
     try:
         result = _service.create_overlay(data)
         return jsonify(result), 201
+    except ImageDownloadError as e:
+        return jsonify(error_response(str(e), 400)[0]), 400
     except Exception as e:
         sanitized_msg = sanitize_error_message(e, "Failed to create overlay")
         return jsonify(error_response(sanitized_msg, 500)[0]), 500
@@ -63,7 +64,6 @@ def update_overlay(id: str):
     if data is None:
         return jsonify(error_response("No data provided", 400)[0]), 400
     
-    # Use update validation which allows partial data
     is_valid, error_message = validate_overlay_update_data(data)
     if not is_valid:
         return jsonify(error_response(f"Validation error: {error_message}", 400)[0]), 400
@@ -75,6 +75,8 @@ def update_overlay(id: str):
             return jsonify(error_response("Overlay not found", 404)[0]), 404
         
         return jsonify(result)
+    except ImageDownloadError as e:
+        return jsonify(error_response(str(e), 400)[0]), 400
     except Exception as e:
         sanitized_msg = sanitize_error_message(e, "Failed to update overlay")
         return jsonify(error_response(sanitized_msg, 500)[0]), 500

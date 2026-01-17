@@ -161,6 +161,7 @@ class MockOverlayRepository:
             '_id': overlay_id,
             'type': data.type,
             'content': data.content,
+            'imageUrl': data.image_url,
             'x': data.x,
             'y': data.y,
             'width': data.width,
@@ -184,7 +185,7 @@ class MockOverlayRepository:
         if overlay_id not in self._overlays:
             return None
         
-        allowed_fields = {'type', 'content', 'x', 'y', 'width', 'height', 'zIndex', 'visible'}
+        allowed_fields = {'type', 'content', 'imageUrl', 'x', 'y', 'width', 'height', 'zIndex', 'visible'}
         for field in allowed_fields:
             if field in data:
                 self._overlays[overlay_id][field] = data[field]

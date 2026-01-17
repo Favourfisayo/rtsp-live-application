@@ -3,6 +3,7 @@ flask>=2.3.0,<3.0.0
 python-dotenv
 flask-limiter
 bleach>=6.0.0
+requests>=2.31.0
 
 # Local packages
 -e ../../packages/db
